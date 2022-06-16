@@ -35,6 +35,8 @@ def main():
     resp, last = collect(pair, interval)
     for ohlc in resp:
         data.append(ohlc)
+    time.sleep(interval * 719 * 60)
+    
     while True:
         try:
             if int(time.time() // 60) == (last + (720 * interval * 60)) // 60:
