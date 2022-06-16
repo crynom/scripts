@@ -41,6 +41,7 @@ def main():
                 resp, last = collect(pair, interval)
                 for ohlc in resp:
                     data.append(ohlc)
+                time.sleep(interval * 719 * 60)
         except KeyboardInterrupt:
             dump(data, pair, interval)
             break
