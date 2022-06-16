@@ -1,13 +1,13 @@
 import requests
 import json
 import time
-from datetime import datetime as dt
 
 def collect(pair, interval):
     print(f'\nCollecting at {int(time.time())}')
     resp = requests.get(f'https://api.kraken.com/0/public/OHLC?pair={pair}&interval={interval}').json()
     last = resp.get('result').get('last')
     data = resp.get('result').get(pair)
+    print(f'\nNext collect at {last + (720 * interval * 60)}')
     return data, last
 
 def dump(data, pair, interval):
@@ -16,7 +16,7 @@ def dump(data, pair, interval):
             readout = json.load(read).get(pair)
             data = readout + data
             out = {pair:data}
-    except: 
+    except FileNotFoundError: 
         with open(f'{pair}{interval}.json', 'w') as write:
             out = {pair:data}
             json.dump(out, write)
@@ -36,8 +36,8 @@ def main():
     for ohlc in resp:
         data.append(ohlc)
     while True:
-        try:    
-            if int(time.time()) >= last + (720 * interval):
+        try:
+            if int(time.time()) == last + (720 * interval * 60):
                 resp, last = collect(pair, interval)
                 for ohlc in resp:
                     data.append(ohlc)
