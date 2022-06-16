@@ -3,11 +3,11 @@ import json
 import time
 
 def collect(pair, interval):
-    print(f'\nCollecting at {int(time.time())}')
+    print(f'\nCollecting at {int(time.time() // 60)}')
     resp = requests.get(f'https://api.kraken.com/0/public/OHLC?pair={pair}&interval={interval}').json()
     last = resp.get('result').get('last')
     data = resp.get('result').get(pair)
-    print(f'\nNext collect at {last + (720 * interval * 60)}')
+    print(f'\nNext collect at {(last + (720 * interval * 60)) // 60}')
     return data, last
 
 def dump(data, pair, interval):
@@ -37,7 +37,7 @@ def main():
         data.append(ohlc)
     while True:
         try:
-            if int(time.time()) == last + (720 * interval * 60):
+            if int(time.time() // 60) == (last + (720 * interval * 60)) // 60:
                 resp, last = collect(pair, interval)
                 for ohlc in resp:
                     data.append(ohlc)
