@@ -1,3 +1,4 @@
+import enum
 import requests
 import json
 import time
@@ -7,7 +8,7 @@ def collect(pair, interval):
     resp = requests.get(f'https://api.kraken.com/0/public/OHLC?pair={pair}&interval={interval}').json()
     last = resp.get('result').get('last')
     data = resp.get('result').get(pair)
-    print(f'\nNext collect at {(last + (len(data) * interval * 60)) // 60}')
+    print(f'\nNext collect at {(last + (720 * interval * 60)) // 60}')
     return data, last
 
 def dump(data, pair, interval):
@@ -15,6 +16,7 @@ def dump(data, pair, interval):
         with open(f'{pair}{interval}.json', 'r') as read:
             readout = json.load(read).get(pair)
             data = readout + data
+            data = [x for i, x in enumerate(data) if i == data.index(x)]
             out = {pair:data}
     except FileNotFoundError: 
         with open(f'{pair}{interval}.json', 'w') as write:
@@ -23,6 +25,7 @@ def dump(data, pair, interval):
         with open(f'{pair}{interval}.json', 'r') as read:
             readout = json.load(read).get(pair)
             data = readout + data
+            data = [x for i, x in enumerate(data) if i == data.index(x)]
             out = {pair:data}
     with open(f'{pair}{interval}.json', 'w') as write:
         json.dump(out, write)
@@ -35,21 +38,15 @@ def main():
     resp, last = collect(pair, interval)
     for ohlc in resp:
         data.append(ohlc)
-    try:
-        time.sleep(interval * (len(resp)-1) * 60)
-    except KeyboardInterrupt:
-        dump(data, pair, interval)
-        return
     while True:
         try:
-            if int(time.time() // 60) == (last + (len(resp) * interval * 60)) // 60:
+            if int(time.time() // 60) == (last + (720 * interval * 60)) // 60:
                 resp, last = collect(pair, interval)
                 for ohlc in resp:
                     data.append(ohlc)
-                time.sleep(interval * (len(resp)-1) * 60)
         except KeyboardInterrupt:
             dump(data, pair, interval)
-            return
+            break
 
 if __name__ == '__main__':
     main()
