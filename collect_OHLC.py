@@ -33,7 +33,10 @@ def dump(data, pair, interval):
 def main():
     data = []
     pair = input('Collect data for which pair? ').upper()
-    interval = 1
+    intervals = [1, 5, 15, 30, 60, 240, 1440, 10080, 21600]
+    interval = input('What minute interval? ')
+    while interval not in intervals:
+        interval = input('What minute interval [1, 5, 15, 30, 60, 240, 1440, 10080, 21600]? ')
     resp, last = collect(pair, interval)
     for ohlc in resp:
         data.append(ohlc)
