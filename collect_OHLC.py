@@ -2,9 +2,11 @@ import requests
 import json
 import time
 
-def collect(pair, interval):
+def collect(pair, interval, last = None):
     print(f'\nCollecting at {int(time.time() // 60)}')
     resp = requests.get(f'https://api.kraken.com/0/public/OHLC?pair={pair}&interval={interval}').json()
+    if last is not None:
+        resp = requests.get(f'https://api.kraken.com/0/public/OHLC?pair={pair}&interval={interval}&since={last}').json()
     last = resp.get('result').get('last')
     data = resp.get('result').get(pair)
     print(f'\nNext collect at {(last + (len(data) * interval * 60)) // 60}')
@@ -48,7 +50,7 @@ def main():
     while True:
         try:
             if int(time.time() // 60) == (last + (len(resp) * interval * 60)) // 60:
-                resp, last = collect(pair, interval)
+                resp, last = collect(pair, interval, last)
                 for ohlc in resp:
                     data.append(ohlc)
                 time.sleep((len(resp)-1) * 60 * interval)
